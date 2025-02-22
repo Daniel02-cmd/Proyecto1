@@ -1,0 +1,11 @@
+# temas de reunión:
+1. Ideas de los articulos
+    * variables importantes
+    * tranformación de la variable de interés
+    * Uso de modelos de regresión
+2. Acciones para orden del repo
+    * git ignore
+    * carpetas
+    * empalme con todo
+    * requirements.txt
+3. Bosquejo del tablero

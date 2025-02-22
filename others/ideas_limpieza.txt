@@ -1,0 +1,10 @@
+Nulos:
+ * bathrooms, bedrooms, cityname, state, latitude, longitude podemos quitar los nulos porque son insignificantes <1%
+ * amenities, pets_allowed puede ser no aplica
+ * address merece la pena agregar la variable?
+
+Estandarización:
+ * Price hay que relacionarlo con la variable de periodo (price_type) (problema con el valor que dice Monthly|Weekly)
+ * Varia mucho la publicación por source? habria que hacer un ajuste?
+ * Reducir las variables que no son tan reprentativas. Por ejemplo, baños 1,2,3,4 >4
+ * Los valores de amenities son fijos para hacer el dummys?
