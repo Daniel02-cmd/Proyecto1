@@ -6,11 +6,11 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 import joblib
 
-file_path = 'data/datos_clean.csv'  # Ajusta la ruta correcta
+file_path = '../data/datos_clean.csv'  # Ajusta la ruta correcta
 
 
 #Cargar los datos
-file_path = 'data/datos_clean.csv'
+file_path = '../data/datos_clean.csv'
 df_clean=pd.read_csv(file_path,encoding="utf-8",sep=',')
 print(df_clean.head())
 
@@ -79,4 +79,24 @@ r2_2 = r2_score(y_test2, y_pred2)
 print(f"Segundo modelo: Mean Squared Error (MSE): {mse2:.4f}")
 print(f"Segundo modelo: R cuadrado Score: {r2_2:.4f}")
 
-joblib.dump(rf_model2, "modelo_random_forest.pkl")
+joblib.dump(rf_model2, "../models/modelo_random_forest.pkl")
+
+
+## Extracción de la importancia de las variables ---------------------------------------------------------
+# Extraer la importancia de las variables
+importances = rf_model2.feature_importances_
+
+# Si 'X_train' es un DataFrame, se pueden obtener los nombres de las variables
+feature_names = X_train2.columns
+
+# Crear una Serie de pandas para visualizar mejor la importancia
+feat_importances = pd.Series(importances, index=feature_names)
+
+# Ordenar las importancias de mayor a menor
+feat_importances = feat_importances.sort_values(ascending=False).reset_index()
+
+feat_importances.columns = ['variable', 'importance']
+
+feat_importances.to_csv('../data/importance_variables.csv', index=False)
+
+print(X_train2.columns)
