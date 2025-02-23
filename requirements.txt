@@ -2,7 +2,7 @@ pandas
 dash
 numpy
 joblib
-sklearn
+scikit-learn
 matplotlib
 seaborn
 folium
