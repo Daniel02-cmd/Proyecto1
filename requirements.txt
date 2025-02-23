@@ -1,0 +1,10 @@
+pandas
+dash
+numpy
+joblib
+sklearn
+matplotlib
+seaborn
+folium
+scipy
+statsmodels
