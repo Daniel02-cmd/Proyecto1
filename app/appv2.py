@@ -437,5 +437,5 @@ def update_output(n_clicks, sf, rooms, baths, city, amenities, pets):
     return estimate_value, diff_est, mean_makt, min_makt, max_makt, grap, m
 
 if __name__ == '__main__':
-    # app.run_server(host = "0.0.0.0", debug=True)
-    app.run_server(debug=True)
+    app.run_server(host = "0.0.0.0", debug=True)
+    # app.run_server(debug=True)
