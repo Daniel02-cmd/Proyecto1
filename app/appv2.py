@@ -1,6 +1,7 @@
 import dash
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
+import plotly.graph_objects as go
 
 import pandas as pd
 import numpy as np
@@ -15,7 +16,7 @@ from folium.plugins import HeatMap
 modelo = joblib.load('../models/modelo_random_forest.pkl')
 
 # Carga de las variables del modelo y su peso
-importance_variables = pd.read_csv('../data/importance_variables.csv')
+importance_variable = pd.read_csv('../data/importance_variables.csv')
 
 # Inicialización de las variables
 def initialize_inputs():
@@ -52,17 +53,45 @@ def new_request(request):
 
 def importance_variables(request):
     
-    names = []
-    values = []
+    X_values = initialize_inputs()
     
     for variable in request.keys():
         
         position = X_names.index(variable)
         X_values[position] = request[variable]
 
-    X = pd.DataFrame([X_values], columns=X_names)
+    X = pd.DataFrame({'variable':X_names,'values':X_values}).reset_index()
+    X = pd.merge(X, importance_variable, how='left', on='variable')
 
-    return 0
+    X = X[X['values']>0]
+
+    totalw = np.sum(X['importance'])
+
+    X['importance_norm'] = X['importance']/totalw
+
+    X = X.sort_values('importance_norm',ascending=False)
+
+    fig = go.Figure(data=[go.Bar(x=X['variable'],
+                             y=X['importance_norm'])])
+    
+    fig.update_layout(yaxis_title="Importancia",
+                  xaxis_title="Atributo",
+                  margin=dict(l=10, r=10, t=0, b=10),
+                  paper_bgcolor="#F2FBFD")
+    
+    return fig
+
+def importance_variables_init():
+    
+    fig = go.Figure()
+    
+    fig.update_layout(xaxis_title="Importancia",
+                  yaxis_title="Atributo",
+                  margin=dict(l=10, r=10, t=0, b=10),
+                  paper_bgcolor="#F2FBFD",    # Background color of the entire figure
+                  )
+    
+    return fig
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -125,12 +154,13 @@ app.layout = html.Div(
         html.Div(
            style={
                 'width': '25%',
-                'backgroundColor': '#f0f0f0',  # optional styling
+                'backgroundColor': '#8ecae6',  # optional styling
                 'padding': '10px'
             },
             # Seccion de panel de control
             children=[
-                 html.H1("Panel de control"),
+                 html.H2("Estimación de precios de apartamentos"),
+                 html.Div("Ingrese los datos del apartamento a estimar:"),
                  html.Div(
                     style={
                         'padding': '10px'
@@ -215,14 +245,21 @@ app.layout = html.Div(
                         )
                     ]
                  ),
-                html.Button('Submit', id='my-button', n_clicks=0)
+                html.Button('Calcular', id='my-button', n_clicks=0,
+                                style={
+                                    'backgroundColor': '#0077B6',  # Set the desired background color
+                                    'color': 'white',              # Text color
+                                    'border': 'none',
+                                    'borderRadius': '5px'
+                                }
+                            )
             ]
         ),
         # Seccion de salidas / resultado
         html.Div(
             style={
                 'width': '75%',
-                'backgroundColor': '#e0e0e0',  # optional styling
+                'backgroundColor': '#F2FBFD',  # optional styling
                 'padding': '10px',
             },
             children=[
@@ -231,12 +268,12 @@ app.layout = html.Div(
                         'padding': '10px',
                         # 'backgroundColor': '#000000',  # optional styling
                     },
-                    children=html.H3("Mercado de venta de apartamentos")
+                    children=html.H3("Resultado del cálculo del apartamento vs. el mercado")
                 ),
                 html.Div(
                     style={
                         'padding': '10px',
-                        # 'backgroundColor': '#e0e0e0',  # optional styling
+                        # 'backgroundColor': '#F2FBFD',  # optional styling
                         'display': 'flex'
                     },
                     children=[
@@ -251,9 +288,12 @@ app.layout = html.Div(
                                     style={
                                         "font-weight": "bold"
                                     },
-                                    children="Precio estimado: "
+                                    children=html.H5("Precio estimado: ")
                                 ),
                                 html.Div(
+                                    style={
+                                        "font-weight": "bold"
+                                    },
                                     id='output-est'
                                 ),
                                 html.Div(
@@ -264,7 +304,7 @@ app.layout = html.Div(
                         html.Div(
                             style={
                                 'width': '50%',
-                                'backgroundColor': '#e0e0e0',  # optional styling
+                                'backgroundColor': '#F2FBFD',  # optional styling
                                 'padding': '10px'
                             },
                             children=[
@@ -272,7 +312,7 @@ app.layout = html.Div(
                                     style={
                                         "font-weight": "bold"
                                     },
-                                    children="Precio del mercado"
+                                    children=html.H5("Precio del mercado")
                                 ),
                                 html.Div(
                                     id='output-mean-mkt'
@@ -290,26 +330,29 @@ app.layout = html.Div(
                 html.Div(
                     style={
                         'padding': '10px',
-                        # 'backgroundColor': '#e0e0e0',  # optional styling
+                        # 'backgroundColor': '#F2FBFD',  # optional styling
                         'display': 'flex'
                     },
                     children=[
                         html.Div(
                             style={
                                 'width': '50%',
-                                'backgroundColor': '#e0e0e0',  # optional styling
-                                'padding': '10px'
+                                'backgroundColor': '#F2FBFD',  # optional styling
+                                'padding': '20px'
                             },
-                            children='Primera parte'
+                            children=[
+                                html.Div(html.H5("¿Que factores influyeron en la estimación?")),
+                                dcc.Graph(id='grap-importance')
+                            ]
                         ),
                         html.Div(
                             style={
                                 'width': '50%',
-                                'backgroundColor': '#e0e0e0',  # optional styling
-                                'padding': '10px'
+                                'backgroundColor': '#F2FBFD',  # optional styling
+                                'padding': '20px'
                             },
                             children=[
-                                html.Div("Diferencia de precios en otras ciudades del estado:"),
+                                html.Div(html.H5("Diferencia de precios en otras ciudades del estado:")),
                                 html.Iframe(
                                     id='map-iframe',  # This is the id you can reference in callbacks
                                     # srcDoc=get_map(df)._repr_html_(),
@@ -336,7 +379,7 @@ app.layout = html.Div(
     [
         Output('output-est', 'children'), Output('output-diff', 'children'),
         Output('output-mean-mkt', 'children'), Output('output-min-mkt', 'children'), Output('output-max-mkt', 'children'),
-        Output('map-iframe', 'srcDoc')
+        Output('grap-importance', 'figure'),Output('map-iframe', 'srcDoc')
     ],
     Input('my-button', 'n_clicks'),
     [
@@ -353,6 +396,7 @@ def update_output(n_clicks, sf, rooms, baths, city, amenities, pets):
     min_makt = 'Precio mayor: '
     max_makt = 'Precio menor: '
     diff_est = '0 vs. el promedio del mercado'
+    grap = importance_variables_init()
     m = get_map_init(df)._repr_html_()
     
     # Cuando el usuario ya agregó valores
@@ -386,10 +430,12 @@ def update_output(n_clicks, sf, rooms, baths, city, amenities, pets):
 
         diff_est = '{value} vs. el promedio del mercado'.format(value=diff)
 
+        grap = importance_variables(req)
+        
         m = get_map(df[df['state'] == city[:2]], value)._repr_html_()
 
-    # Recien iniciada la app
-    return estimate_value, diff_est, mean_makt, min_makt, max_makt, m
+    return estimate_value, diff_est, mean_makt, min_makt, max_makt, grap, m
 
 if __name__ == '__main__':
-    app.run_server(host = "0.0.0.0", debug=True)
+    # app.run_server(host = "0.0.0.0", debug=True)
+    app.run_server(debug=True)
