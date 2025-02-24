@@ -10,7 +10,7 @@ file_path = '../data/datos_clean.csv'  # Ajusta la ruta correcta
 
 
 #Cargar los datos
-file_path = '../data/datos_clean.csv'
+file_path = 'data/datos_clean.csv'
 df_clean=pd.read_csv(file_path,encoding="utf-8",sep=',')
 print(df_clean.head())
 
@@ -18,7 +18,7 @@ print(df_clean.head())
 
 #Definir las variables predictoras (X) y la variable objetivo (y)
 X = df_clean[['state', 'bathrooms', 'bedrooms', 'square_feet', 'num_amenities', 'Patio/Deck', 'Parking', 'Internet Access', 'Storage', 'pets']]  # Variables seleccionadas
-y = df_clean['log_price']  # Variable objetivo
+y = df_clean['price']  # Variable objetivo
 
 #Convertir las variables categóricas en variables dummy
 X = pd.get_dummies(X, columns=['state'], drop_first=True)
